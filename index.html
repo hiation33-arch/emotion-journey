@@ -148,7 +148,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun 
       <div class="stage-eye">Step 1</div>
       <h2 class="stage-title">지금 느껴지는 감정을<br>골라주세요</h2>
       <p class="stage-desc">끌리는 단어를 자유롭게 선택하세요<br>맞고 틀림이 없어요</p>
-      <span class="stage-cnt" id="cnt1">0 / 최대 15개</span>
+      <span class="stage-cnt" id="cnt1">0 / 15개 (15개를 모두 선택해주세요)</span>
     </div>
     <div class="chip-grid" id="grid1"></div>
   </div>
@@ -271,7 +271,7 @@ let S={tf:'',s1:[],s1t:0,s1ts:null,s2:[],s2t:0,s2ts:null,s3_dropped:[],s3t:0,s3t
 function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
 function pickTF(v,el){S.tf=v;document.querySelectorAll('.tf-card').forEach(c=>c.classList.remove('on'));el.classList.add('on');document.getElementById('btn-tf').disabled=false;}
 function go_s1(){if(!document.getElementById('grid1').children.length){const g=document.getElementById('grid1');POS.forEach(w=>{const c=document.createElement('div');c.className='chip';c.textContent=w;c.onclick=()=>togS1(c,w);g.appendChild(c);});S.s1ts=Date.now();}go('s-s1');}
-function togS1(c,w){S.s1t++;if(c.classList.contains('on')){c.classList.remove('on');S.s1=S.s1.filter(x=>x!==w);}else{if(S.s1.length>=15){toast('최대 15개까지 선택할 수 있어요');return;}c.classList.add('on');S.s1.push(w);}document.getElementById('cnt1').textContent=`${S.s1.length} / 최대 15개`;document.getElementById('btn-s1').disabled=S.s1.length<8;}
+function togS1(c,w){S.s1t++;if(c.classList.contains('on')){c.classList.remove('on');S.s1=S.s1.filter(x=>x!==w);}else{if(S.s1.length>=15){toast('최대 15개까지 선택할 수 있어요');return;}c.classList.add('on');S.s1.push(w);}document.getElementById('cnt1').textContent=`${S.s1.length} / 15개 (15개를 모두 선택해주세요)`;document.getElementById('btn-s1').disabled=S.s1.length<15;}
 function toS2(){S.times.s1=Date.now()-S.s1ts;S.s2=[...S.s1];const g=document.getElementById('grid2');g.innerHTML='';S.s1.forEach(w=>{const c=document.createElement('div');c.className='chip drop-on';c.textContent=w;c.onclick=()=>togDrop2(c,w);g.appendChild(c);});S.s2ts=Date.now();updS2();go('s-s2');}
 function togDrop2(c,w){S.s2t++;if(c.classList.contains('drop-on')){c.classList.remove('drop-on');S.s2=S.s2.filter(x=>x!==w);}else{c.classList.add('drop-on');S.s2.push(w);}updS2();}
 function updS2(){const cnt=document.querySelectorAll('#grid2 .drop-on').length;document.getElementById('cnt2').textContent=cnt<=8?`${cnt}개 선택됨`:`${cnt}개 → 8개까지 줄여주세요`;document.getElementById('btn-s2').disabled=!(cnt<=8&&cnt>=3);}

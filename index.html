@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지금 나는 어떤 감정인가요</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sky:#E8F4F8;--sky-mid:#C5E3EF;--sky-deep:#8BBFD4;
+  --mint:#D6EFE8;--mint-mid:#9DD4C4;--mint-deep:#5BA99A;
+  --gold:#C4A882;--gold-light:#EDE3D5;
+  --white:#FFFFFF;--text:#2D3B45;--text-mid:#5A7280;--text-light:#96ADB8;
+  --surface:#F7FBFD;--border:#D8EBF2;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--sky);color:var(--text);min-height:100vh;}
+.screen{display:none;min-height:100vh;padding-bottom:90px}
+.screen.active{display:block}
+#s-intro{display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 28px 80px;min-height:100vh;background:linear-gradient(160deg,#E8F4F8 0%,#D6EFE8 100%)}
+#s-intro.active{display:flex}
+.intro-heart{margin-bottom:16px;margin-top:8px}
+.intro-line{width:40px;height:2px;background:var(--gold);margin:0 auto 24px;border-radius:2px}
+.intro-title{font-size:clamp(24px,6vw,32px);font-weight:300;line-height:1.5;color:var(--text);margin-bottom:16px;letter-spacing:-0.01em}
+.intro-sub{font-size:14px;color:var(--text-mid);line-height:2.1;margin-bottom:40px}
+.intro-em{color:var(--mint-deep);font-style:normal}
+.stats{display:flex;gap:12px;margin-bottom:40px;width:100%;max-width:320px}
+.stat{flex:1;background:rgba(255,255,255,0.7);border-radius:14px;padding:16px 8px;border:1px solid var(--border);text-align:center}
+.stat-n{font-size:20px;color:var(--mint-deep);display:block;font-weight:400}
+.stat-l{font-size:11px;color:var(--text-light);margin-top:4px;display:block}
+.btn-main{background:var(--mint-deep);color:#fff;border:none;border-radius:100px;padding:15px 40px;font-size:15px;font-family:inherit;font-weight:500;cursor:pointer;width:100%;max-width:280px;letter-spacing:0.02em;transition:opacity 0.2s}
+.btn-main:active{opacity:0.85}
+.btn-main:disabled{opacity:0.4;cursor:not-allowed}
+.top-bar{background:rgba(232,244,248,0.95);position:sticky;top:0;z-index:10;padding:14px 20px 10px;border-bottom:1px solid var(--border)}
+.top-bar-inner{max-width:560px;margin:0 auto}
+.prog-bar{height:2px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--gold);border-radius:2px;transition:width 0.5s ease}
+.prog-label{font-size:11px;color:var(--text-light);margin-top:6px;letter-spacing:0.04em}
+.inner{max-width:560px;margin:0 auto;padding:0 20px}
+.stage-hd{padding:28px 0 20px}
+.stage-eye{font-size:11px;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px}
+.stage-title{font-size:clamp(19px,5vw,24px);font-weight:300;line-height:1.5;color:var(--text);margin-bottom:8px;letter-spacing:-0.01em}
+.stage-desc{font-size:13px;color:var(--text-mid);line-height:1.9}
+.stage-cnt{display:inline-block;background:var(--gold-light);color:var(--gold);font-size:12px;padding:4px 14px;border-radius:100px;margin-top:12px}
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:20px}
+.chip{padding:9px 18px;border-radius:100px;border:1.5px solid var(--border);background:var(--white);font-size:14px;color:var(--text-mid);cursor:pointer;transition:all 0.15s;user-select:none;-webkit-tap-highlight-color:transparent;font-family:inherit}
+.chip:active{transform:scale(0.95)}
+.chip.on{background:var(--sky-mid);border-color:var(--sky-deep);color:var(--text);font-weight:500}
+.chip.drop-on{background:var(--mint-mid);border-color:var(--mint-deep);color:var(--text);font-weight:500}
+.chip.dropped{background:#F0EEEB;border-color:#E0DDD8;color:var(--text-light);text-decoration:line-through}
+.hint{background:rgba(155,212,196,0.2);border:1px solid var(--mint-mid);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--mint-deep);line-height:1.7;margin-bottom:20px}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--sky) 70%,transparent);padding:16px 20px 24px;z-index:20}
+.bottom-inner{max-width:560px;margin:0 auto;display:flex;flex-direction:column;align-items:center}
+.tf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0 32px}
+.tf-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px 8px;text-align:center;cursor:pointer;transition:all 0.15s}
+.tf-card:active{transform:scale(0.97)}
+.tf-card.on{border-color:var(--mint-deep);background:rgba(214,239,232,0.4)}
+.tf-icon{width:28px;height:28px;background:var(--sky-mid);border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center}
+.tf-card.on .tf-icon{background:var(--mint-mid)}
+.tf-dot{width:8px;height:8px;border-radius:50%;background:var(--sky-deep)}
+.tf-card.on .tf-dot{background:var(--mint-deep)}
+.tf-label{font-size:13px;color:var(--text-mid);font-weight:500}
+.tf-card.on .tf-label{color:var(--mint-deep)}
+.opp-card{background:var(--white);border-radius:14px;padding:18px;margin-bottom:12px;border:1px solid var(--border)}
+.opp-neg{font-size:12px;color:var(--text-light);margin-bottom:8px}
+.opp-neg span{background:var(--sky);padding:3px 10px;border-radius:100px;color:var(--text-mid)}
+.opp-q{font-size:13px;color:var(--text-mid);margin-bottom:10px}
+.opp-chips{display:flex;flex-wrap:wrap;gap:7px}
+#s-result{padding:0 0 100px}
+.result-hero{background:linear-gradient(135deg,var(--mint) 0%,var(--sky) 100%);padding:48px 28px 36px;text-align:center;border-bottom:1px solid var(--border)}
+.result-line{width:32px;height:1px;background:var(--gold);margin:0 auto 20px}
+.result-title{font-size:20px;font-weight:300;color:var(--text);margin-bottom:8px}
+.result-sub{font-size:13px;color:var(--text-mid)}
+.result-sec{padding:24px 20px 0;max-width:560px;margin:0 auto}
+.result-lbl{font-size:11px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px}
+.result-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.rc{padding:8px 18px;border-radius:100px;font-size:14px;font-weight:500}
+.rc-core{background:var(--sky-mid);color:var(--text)}
+.rc-shadow{background:#F0EEEB;color:var(--text-mid)}
+.pair-list{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.pair-item{display:flex;align-items:center;gap:10px;background:var(--white);border-radius:12px;padding:14px 16px;border:1px solid var(--border);font-size:13px}
+.pair-from{color:var(--text-mid);flex:1}
+.pair-arr{color:var(--gold);font-size:14px}
+.pair-to{color:var(--mint-deep);font-weight:500;flex:1;text-align:right}
+.divider{height:1px;background:var(--border);margin:24px 0}
+.data-box{background:var(--white);border-radius:14px;padding:18px;border:1px solid var(--border);margin-bottom:14px}
+.data-box-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px}
+.data-note{font-size:12px;color:var(--text-light);line-height:1.7;margin-bottom:10px}
+.data-pre{background:var(--surface);border-radius:10px;padding:12px;font-size:11px;color:var(--text-mid);font-family:monospace;line-height:1.7;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;border:1px solid var(--border)}
+.copy-btn{width:100%;padding:11px;margin-top:10px;border:1.5px solid var(--border);border-radius:100px;background:none;font-size:13px;color:var(--text-mid);cursor:pointer;font-family:inherit;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.copy-btn.done{background:var(--mint);border-color:var(--mint-deep);color:var(--mint-deep)}
+.restart{display:block;text-align:center;font-size:13px;color:var(--text-light);padding:16px;cursor:pointer;text-decoration:underline}
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--text);color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;opacity:0;transition:all 0.25s;z-index:100;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div id="s-intro" class="screen active">
+  <div class="intro-heart">
+    <svg width="32" height="30" viewBox="0 0 80 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M40 68 C40 68 8 48 8 24 C8 12 17 4 28 4 C34 4 39 7 40 10 C41 7 46 4 52 4 C63 4 72 12 72 24 C72 48 40 68 40 68Z" fill="#F7C5D5" stroke="#EFA8C0" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="intro-line"></div>
+  <h1 class="intro-title">지금 나는<br>어떤 감정인가요</h1>
+  <p class="intro-sub">
+    100여 개의 감정 단어 중에서 고르고, 또 내려놓으며<br>
+    지금 내 안의 감정을 만납니다<br><br>
+    <em class="intro-em">느끼는 대로, 이끌리는 대로<br>내 감정을 만나보세요</em>
+  </p>
+  <div class="stats">
+    <div class="stat"><span class="stat-n">6</span><span class="stat-l">단계</span></div>
+    <div class="stat"><span class="stat-n">5~10</span><span class="stat-l">분 소요</span></div>
+    <div class="stat"><span class="stat-n">3</span><span class="stat-l">핵심 감정</span></div>
+  </div>
+  <button class="btn-main" onclick="go('s-tf')">여정 시작하기</button>
+</div>
+
+<div id="s-tf" class="screen">
+  <div class="top-bar"><div class="top-bar-inner">
+    <div class="prog-bar"><div class="prog-fill" style="width:10%"></div></div>
+    <div class="prog-label">준비 단계</div>
+  </div></div>
+  <div class="inner">
+    <div class="stage-hd">
+      <div class="stage-eye">Step 0</div>
+      <h2 class="stage-title">어느 시간대의 나를<br>만나고 싶나요?</h2>
+      <p class="stage-desc">탐색할 감정의 시간 범위를 먼저 정해봐요</p>
+    </div>
+    <div class="tf-grid">
+      <div class="tf-card" onclick="pickTF('오늘',this)"><div class="tf-icon"><div class="tf-dot"></div></div><div class="tf-label">오늘</div></div>
+      <div class="tf-card" onclick="pickTF('요즘',this)"><div class="tf-icon"><div class="tf-dot"></div></div><div class="tf-label">요즘</div></div>
+      <div class="tf-card" onclick="pickTF('자주',this)"><div class="tf-icon"><div class="tf-dot"></div></div><div class="tf-label">자주 느끼는</div></div>
+    </div>
+  </div>
+  <div class="bottom"><div class="bottom-inner">
+    <button class="btn-main" id="btn-tf" onclick="go_s1()" disabled>다음으로</button>
+  </div></div>
+</div>
+
+<div id="s-s1" class="screen">
+  <div class="top-bar"><div class="top-bar-inner">
+    <div class="prog-bar"><div class="prog-fill" style="width:25%"></div></div>
+    <div class="prog-label">1단계 · 감정 고르기</div>
+  </div></div>
+  <div class="inner">
+    <div class="stage-hd">
+      <div class="stage-eye">Step 1</div>
+      <h2 class="stage-title">지금 느껴지는 감정을<br>골라주세요</h2>
+      <p class="stage-desc">끌리는 단어를 자유롭게 선택하세요<br>맞고 틀림이 없어요</p>
+      <span class="stage-cnt" id="cnt1">0 / 최대 15개</span>
+    </div>
+    <div class="chip-grid" id="grid1"></div>
+  </div>
+  <div class="bottom"><div class="bottom-inner">
+    <button class="btn-main" id="btn-s1" onclick="toS2()" disabled>다음으로</button>
+  </div></div>
+</div>
+
+<div id="s-s2" class="screen">
+  <div class="top-bar"><div class="top-bar-inner">
+    <div class="prog-bar"><div class="prog-fill" style="width:42%"></div></div>
+    <div class="prog-label">2단계 · 덜어내기</div>
+  </div></div>
+  <div class="inner">
+    <div class="stage-hd">
+      <div class="stage-eye">Step 2</div>
+      <h2 class="stage-title">조금 더 덜어내 볼게요</h2>
+      <p class="stage-desc">지금 가장 크게 느껴지는 것만 남기고<br>나머지를 내려놓아 보세요</p>
+      <span class="stage-cnt" id="cnt2">8개까지 줄여주세요</span>
+    </div>
+    <div class="hint">탭해서 내려놓기 · 다시 탭하면 되돌아와요</div>
+    <div class="chip-grid" id="grid2"></div>
+  </div>
+  <div class="bottom"><div class="bottom-inner">
+    <button class="btn-main" id="btn-s2" onclick="toS3()" disabled>다음으로</button>
+  </div></div>
+</div>
+
+<div id="s-s3" class="screen">
+  <div class="top-bar"><div class="top-bar-inner">
+    <div class="prog-bar"><div class="prog-fill" style="width:58%"></div></div>
+    <div class="prog-label">3단계 · 핵심 감정 찾기</div>
+  </div></div>
+  <div class="inner">
+    <div class="stage-hd">
+      <div class="stage-eye">Step 3</div>
+      <h2 class="stage-title">마지막까지 남는<br>감정은 무엇인가요</h2>
+      <p class="stage-desc">지금 가장 진하게 느껴지는 3가지를<br>탭해서 덜어내 보세요</p>
+      <span class="stage-cnt" id="cnt3">0 / 3개 덜어내기</span>
+    </div>
+    <div class="hint">탭하면 내려놓기 · 다시 탭하면 되돌아와요</div>
+    <div class="chip-grid" id="grid3"></div>
+  </div>
+  <div class="bottom"><div class="bottom-inner">
+    <button class="btn-main" id="btn-s3" onclick="toS4()" disabled>다음으로</button>
+  </div></div>
+</div>
+
+<div id="s-s4" class="screen">
+  <div class="top-bar"><div class="top-bar-inner">
+    <div class="prog-bar"><div class="prog-fill" style="width:72%"></div></div>
+    <div class="prog-label">4단계 · 그림자 감정</div>
+  </div></div>
+  <div class="inner">
+    <div class="stage-hd">
+      <div class="stage-eye">Step 4</div>
+      <h2 class="stage-title">외면하고 싶었던<br>감정도 있나요?</h2>
+      <p class="stage-desc">불편하거나 인정하기 어려웠던 감정들이에요<br>5개를 골라주세요</p>
+      <span class="stage-cnt" id="cnt4">0 / 5개</span>
+    </div>
+    <div class="chip-grid" id="grid4"></div>
+  </div>
+  <div class="bottom"><div class="bottom-inner">
+    <button class="btn-main" id="btn-s4" onclick="toS5()" disabled>다음으로</button>
+  </div></div>
+</div>
+
+<div id="s-s5" class="screen">
+  <div class="top-bar"><div class="top-bar-inner">
+    <div class="prog-bar"><div class="prog-fill" style="width:86%"></div></div>
+    <div class="prog-label">5단계 · 원하는 감정</div>
+  </div></div>
+  <div class="inner">
+    <div class="stage-hd">
+      <div class="stage-eye">Step 5</div>
+      <h2 class="stage-title">그 감정 대신<br>느끼고 싶은 건 뭔가요?</h2>
+      <p class="stage-desc">각 그림자 감정의 반대편, 지금 원하는 감정을<br>하나씩 골라주세요</p>
+    </div>
+    <div id="opp-cards"></div>
+  </div>
+  <div class="bottom"><div class="bottom-inner">
+    <button class="btn-main" id="btn-s5" onclick="buildResult()" disabled>결과 보기</button>
+  </div></div>
+</div>
+
+<div id="s-result" class="screen">
+  <div class="result-hero">
+    <div class="result-line"></div>
+    <h2 class="result-title" id="r-title"></h2>
+    <p class="result-sub" id="r-sub"></p>
+  </div>
+  <div class="result-sec">
+    <div class="result-lbl">핵심 감정 3가지</div>
+    <div class="result-chips" id="r-core"></div>
+    <div class="result-lbl">외면했던 감정</div>
+    <div class="result-chips" id="r-shadow"></div>
+    <div class="result-lbl">원하는 감정으로의 전환</div>
+    <div class="pair-list" id="r-pairs"></div>
+    <div class="divider"></div>
+    <div class="data-box">
+      <div class="data-box-title">AI 분석 프롬프트</div>
+      <p class="data-note">아래를 복사해서 Claude, ChatGPT 등 AI에 붙여넣어 보세요. 데이터가 함께 포함되어 있어요</p>
+      <div class="data-pre" id="r-prompt"></div>
+      <button class="copy-btn" id="cbp" onclick="copyPrompt()">프롬프트 복사하기</button>
+    </div>
+    <div class="divider"></div>
+    <span class="restart" onclick="restart()">다시 탐색하기</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const POS=['설렘','기쁨','평온','안도','만족','감사','행복','희망','따뜻함','자신감','여유','뿌듯함','기대','활기','흥미','호기심','편안함','충만함','가벼움','자유로움','용기','온화함','신뢰','연결감','몰입','감동','즐거움','경이로움','사랑스러움','아늑함','포근함','두근거림','벅참','울컥함','개운함','홀가분함','생동감','고요함','든든함','반가움','애틋함','충족감','해방감','맑음','기특함','풍요로움','다정함','의욕','회상','흥분'];
+const NEG=['불안','두려움','슬픔','외로움','지침','공허함','혼란','후회','답답함','무기력','분노','억울함','실망','질투','수치심','죄책감','무력감','긴장','불만','압박감','허무함','우울','거리감','지루함','짜증','낙담','거절감','피로','위축감','먹먹함','허탈함','서러움','막막함','냉소','무감각','찜찜함','초조함','버거움','소외감','자괴감','패배감','체념','걱정','지겨움','억압','아련함','허전함','무뎌짐','눈치보임','상실감'];
+const OPP={'불안':['평온','안도','신뢰','여유','안정감'],'두려움':['용기','안전함','신뢰','평온','자신감'],'슬픔':['기쁨','따뜻함','위로','감사','연결감'],'외로움':['연결감','따뜻함','사랑스러움','소속감','함께함'],'지침':['활기','여유','충만함','가벼움','회복'],'공허함':['충만함','의미','몰입','연결감','설렘'],'혼란':['명료함','평온','방향감','확신','안정'],'후회':['수용','자기용서','평화','배움','앞으로'],'답답함':['자유로움','여유','흐름','해방','가벼움'],'무기력':['활기','의욕','희망','에너지','동기'],'분노':['평온','이해','수용','온화함','놓아주기'],'억울함':['인정받음','공정함','이해받음','평화','수용'],'실망':['기대','희망','수용','평온','신뢰'],'질투':['자족','감사','자신감','여유','사랑'],'수치심':['자기수용','온화함','용기','연결감','자존감'],'죄책감':['자기용서','수용','치유','평화','앞으로'],'무력감':['자신감','힘','연결감','희망','행동'],'긴장':['여유','편안함','평온','신뢰','가벼움'],'불만':['만족','수용','감사','평온','기쁨'],'압박감':['여유','자유로움','가벼움','흐름','편안함'],'허무함':['의미','충만함','연결감','설렘','감사'],'우울':['기쁨','활기','희망','따뜻함','연결감'],'거리감':['연결감','따뜻함','친밀함','소속감','열린마음'],'지루함':['흥미','호기심','설렘','몰입','활기'],'짜증':['평온','여유','온화함','이해','가벼움'],'낙담':['희망','용기','활기','믿음','앞으로'],'거절감':['수용받음','연결감','소속감','사랑받음','인정'],'피로':['활기','회복','여유','가벼움','충전'],'위축감':['자신감','자유로움','용기','편안함','확장'],'먹먹함':['후련함','따뜻함','위로','연결감','공감받음'],'허탈함':['충만함','의미','활기','희망','회복'],'서러움':['위로','공감받음','따뜻함','안도','연결감'],'막막함':['명료함','방향감','안도','신뢰','든든함'],'냉소':['따뜻함','신뢰','연결감','열린마음','기대'],'무감각':['생동감','감동','연결감','활기','깨어있음'],'찜찜함':['개운함','홀가분함','명료함','안도','후련함'],'초조함':['평온','여유','안도','신뢰','가벼움'],'버거움':['가벼움','여유','홀가분함','든든함','지지받음'],'소외감':['연결감','소속감','따뜻함','반가움','함께함'],'자괴감':['자기수용','온화함','용기','자신감','회복'],'패배감':['용기','희망','다시시작','의욕','활기'],'체념':['희망','의욕','설렘','가능성','활기'],'걱정':['안도','신뢰','평온','든든함','여유'],'지겨움':['흥미','설렘','호기심','새로움','활기'],'억압':['자유로움','해방감','홀가분함','당당함','용기'],'아련함':['따뜻함','수용','평온','감사','회상'],'허전함':['충만함','연결감','충족감','따뜻함','설렘'],'무뎌짐':['감동','생동감','흥미','연결감','깨어있음'],'눈치보임':['편안함','자유로움','자신감','당당함','안도'],'상실감':['수용','연결감','따뜻함','회복','감사']};
+
+let S={tf:'',s1:[],s1t:0,s1ts:null,s2:[],s2t:0,s2ts:null,s3_dropped:[],s3t:0,s3ts:null,s3_remain:[],s4:[],s4t:0,s4ts:null,opp:{},s5t:0,s5ts:null,times:{}};
+
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function pickTF(v,el){S.tf=v;document.querySelectorAll('.tf-card').forEach(c=>c.classList.remove('on'));el.classList.add('on');document.getElementById('btn-tf').disabled=false;}
+function go_s1(){if(!document.getElementById('grid1').children.length){const g=document.getElementById('grid1');POS.forEach(w=>{const c=document.createElement('div');c.className='chip';c.textContent=w;c.onclick=()=>togS1(c,w);g.appendChild(c);});S.s1ts=Date.now();}go('s-s1');}
+function togS1(c,w){S.s1t++;if(c.classList.contains('on')){c.classList.remove('on');S.s1=S.s1.filter(x=>x!==w);}else{if(S.s1.length>=15){toast('최대 15개까지 선택할 수 있어요');return;}c.classList.add('on');S.s1.push(w);}document.getElementById('cnt1').textContent=`${S.s1.length} / 최대 15개`;document.getElementById('btn-s1').disabled=S.s1.length<8;}
+function toS2(){S.times.s1=Date.now()-S.s1ts;S.s2=[...S.s1];const g=document.getElementById('grid2');g.innerHTML='';S.s1.forEach(w=>{const c=document.createElement('div');c.className='chip drop-on';c.textContent=w;c.onclick=()=>togDrop2(c,w);g.appendChild(c);});S.s2ts=Date.now();updS2();go('s-s2');}
+function togDrop2(c,w){S.s2t++;if(c.classList.contains('drop-on')){c.classList.remove('drop-on');S.s2=S.s2.filter(x=>x!==w);}else{c.classList.add('drop-on');S.s2.push(w);}updS2();}
+function updS2(){const cnt=document.querySelectorAll('#grid2 .drop-on').length;document.getElementById('cnt2').textContent=cnt<=8?`${cnt}개 선택됨`:`${cnt}개 → 8개까지 줄여주세요`;document.getElementById('btn-s2').disabled=!(cnt<=8&&cnt>=3);}
+function toS3(){S.times.s2=Date.now()-S.s2ts;S.s2=[...document.querySelectorAll('#grid2 .drop-on')].map(c=>c.textContent);S.s3_remain=[...S.s2];S.s3_dropped=[];const g=document.getElementById('grid3');g.innerHTML='';S.s2.forEach(w=>{const c=document.createElement('div');c.className='chip drop-on';c.textContent=w;c.onclick=()=>togDrop3(c,w);g.appendChild(c);});S.s3ts=Date.now();updS3();go('s-s3');}
+function togDrop3(c,w){S.s3t++;if(c.classList.contains('dropped')){c.classList.remove('dropped');c.classList.add('drop-on');S.s3_dropped=S.s3_dropped.filter(x=>x!==w);S.s3_remain.push(w);}else{if(S.s3_dropped.length>=3){toast('3개까지만 덜어낼 수 있어요');return;}c.classList.remove('drop-on');c.classList.add('dropped');S.s3_dropped.push(w);S.s3_remain=S.s3_remain.filter(x=>x!==w);}updS3();}
+function updS3(){const cnt=S.s3_dropped.length;document.getElementById('cnt3').textContent=`${cnt} / 3개 덜어내기`;document.getElementById('btn-s3').disabled=cnt!==3;}
+function toS4(){S.times.s3=Date.now()-S.s3ts;if(!document.getElementById('grid4').children.length){const g=document.getElementById('grid4');NEG.forEach(w=>{const c=document.createElement('div');c.className='chip';c.textContent=w;c.onclick=()=>togS4(c,w);g.appendChild(c);});}S.s4ts=Date.now();go('s-s4');}
+function togS4(c,w){S.s4t++;if(c.classList.contains('on')){c.classList.remove('on');S.s4=S.s4.filter(x=>x!==w);}else{if(S.s4.length>=5){toast('5개까지 선택할 수 있어요');return;}c.classList.add('on');S.s4.push(w);}document.getElementById('cnt4').textContent=`${S.s4.length} / 5개`;document.getElementById('btn-s4').disabled=S.s4.length!==5;}
+function toS5(){S.times.s4=Date.now()-S.s4ts;const con=document.getElementById('opp-cards');con.innerHTML='';S.s4.forEach(neg=>{const opts=OPP[neg]||['평온','기쁨','안도','연결감','자신감'];const card=document.createElement('div');card.className='opp-card';card.innerHTML=`<div class="opp-neg">외면했던 감정 <span>${neg}</span></div><p class="opp-q">대신 느끼고 싶은 감정은?</p><div class="opp-chips" id="oc-${neg}"></div>`;con.appendChild(card);const cd=card.querySelector(`#oc-${neg}`);opts.forEach(o=>{const ch=document.createElement('div');ch.className='chip';ch.textContent=o;ch.onclick=()=>{S.s5t++;cd.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));ch.classList.add('on');S.opp[neg]=o;document.getElementById('btn-s5').disabled=!S.s4.every(n=>S.opp[n]);};cd.appendChild(ch);});});S.s5ts=Date.now();go('s-s5');}
+function buildResult(){
+  S.times.s5=Date.now()-S.s5ts;
+  const core=S.s3_remain;
+  document.getElementById('r-title').textContent=`${S.tf} 나의 감정 지도`;
+  document.getElementById('r-sub').textContent=`핵심 감정 · ${core.join(' · ')}`;
+  document.getElementById('r-core').innerHTML=core.map(w=>`<div class="rc rc-core">${w}</div>`).join('');
+  document.getElementById('r-shadow').innerHTML=S.s4.map(w=>`<div class="rc rc-shadow">${w}</div>`).join('');
+  document.getElementById('r-pairs').innerHTML=Object.entries(S.opp).map(([n,p])=>`<div class="pair-item"><span class="pair-from">${n}</span><span class="pair-arr">→</span><span class="pair-to">${p}</span></div>`).join('');
+  const jd={timeframe:S.tf,core_emotions:core,journey:{positive_selected:S.s1,dropped_step2:S.s3_dropped,shadow_emotions:S.s4,desired_emotions:Object.entries(S.opp).map(([n,p])=>({shadow:n,desired:p}))},stage_data:[{stage:'emotion_select',duration_ms:S.times.s1,toggles:S.s1t},{stage:'drop_to_8',duration_ms:S.times.s2,toggles:S.s2t},{stage:'drop_3',duration_ms:S.times.s3,toggles:S.s3t},{stage:'shadow_select',duration_ms:S.times.s4,toggles:S.s4t},{stage:'desired_select',duration_ms:S.times.s5,toggles:S.s5t}]};
+  window._jd=jd;
+  const pr=`당신은 감정 탐색 데이터를 분석하는 따뜻한 심리 통찰가입니다.\n아래는 사람이 단계적으로 감정을 고르고 덜어내며 완성한 데이터입니다.\n수치(소요 시간, 토글 횟수)는 직접 언급하지 말고, 그 의미만 자연스럽게 녹여주세요.\n\n--- DATA ---\n${JSON.stringify(jd,null,2)}\n--- END DATA ---\n\n위 데이터를 바탕으로 아래 네 가지를 분석해주세요.\n이 사람이 읽었을 때 자신의 이야기처럼 느껴지도록 따뜻하고 구체적으로 써주세요.\n\n1. 【지금 이 사람의 감정 풍경】\n핵심 감정들이 함께 그리는 내면의 장면을 묘사해주세요.\n\n2. 【가장 오래 망설인 감정의 의미】\n가장 많이 고민한 단계에서 이 사람이 무엇과 씨름했는지 풀어주세요.\n\n3. 【그림자 감정이 말해주는 것】\n외면했던 감정들과 원하는 감정으로의 전환에서 읽히는 이 사람의 내면 과제를 이야기해주세요.\n\n4. 【지금 이 사람에게 건네는 말】\n분석을 마치고, 이 사람에게 직접 말을 건네듯 따뜻하고 진심 어린 한 문단을 써주세요.`;
+  window._pr=pr;
+  document.getElementById('r-prompt').textContent=pr;
+  go('s-result');
+}
+function copyPrompt(){const b=document.getElementById('cbp');navigator.clipboard.writeText(window._pr).then(()=>{b.classList.add('done');b.textContent='복사됨 ✓';toast('복사됐어요!');setTimeout(()=>{b.classList.remove('done');b.textContent='프롬프트 복사하기';},2000);});}
+function restart(){S={tf:'',s1:[],s1t:0,s1ts:null,s2:[],s2t:0,s2ts:null,s3_dropped:[],s3t:0,s3ts:null,s3_remain:[],s4:[],s4t:0,s4ts:null,opp:{},s5t:0,s5ts:null,times:{}};document.getElementById('grid1').innerHTML='';document.getElementById('grid4').innerHTML='';go('s-intro');}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+</script>
+</body>
+</html>
